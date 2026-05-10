@@ -1,0 +1,11 @@
+{
+  "name": "cicd-project",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "jest",
+    "test:ci": "jest --forceExit"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
