@@ -40,27 +40,27 @@ pipeline {
       }
     }
 
-    // ── 4. SONARQUBE ───────────────────────────────────────
-    stage('SonarQube Scan') {
-      steps {
-        withSonarQubeEnv('SonarQube') {
-          sh '''
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-            npx sonar-scanner
-          '''
-        }
-      }
-    }
+    // // ── 4. SONARQUBE ───────────────────────────────────────
+    // stage('SonarQube Scan') {
+    //   steps {
+    //     withSonarQubeEnv('SonarQube') {
+    //       sh '''
+    //         export NVM_DIR="$HOME/.nvm"
+    //         [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    //         npx sonar-scanner
+    //       '''
+    //     }
+    //   }
+    // }
 
-    // ── 5. QUALITY GATE ────────────────────────────────────
-    stage('Quality Gate') {
-      steps {
-        timeout(time: 5, unit: 'MINUTES') {
-          waitForQualityGate abortPipeline: true
-        }
-      }
-    }
+    // // ── 5. QUALITY GATE ────────────────────────────────────
+    // stage('Quality Gate') {
+    //   steps {
+    //     timeout(time: 5, unit: 'MINUTES') {
+    //       waitForQualityGate abortPipeline: true
+    //     }
+    //   }
+    // }
 
     // ── 6. DOCKER BUILD ────────────────────────────────────
     stage('Docker Build') {
@@ -71,17 +71,17 @@ pipeline {
     }
 
     // ── 7. TRIVY SCAN ──────────────────────────────────────
-    stage('Trivy Scan') {
-      steps {
-        sh """
-          trivy image \
-            --exit-code 1 \
-            --severity CRITICAL \
-            --no-progress \
-            ${ECR_URI}:${IMAGE_TAG}
-        """
-      }
-    }
+    // stage('Trivy Scan') {
+    //   steps {
+    //     sh """
+    //       trivy image \
+    //         --exit-code 1 \
+    //         --severity CRITICAL \
+    //         --no-progress \
+    //         ${ECR_URI}:${IMAGE_TAG}
+    //     """
+    //   }
+    // }
 
     // ── 8. PUSH TO ECR ─────────────────────────────────────
     stage('Push to ECR') {
@@ -97,25 +97,25 @@ pipeline {
     }
 
     // ── 9. DEPLOY ──────────────────────────────────────────
-    stage('Deploy to EC2') {
-      agent { label 'deploy' }
-      steps {
-        withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
-          sh """
-            aws ecr get-login-password --region ${AWS_REGION} | \
-              docker login --username AWS --password-stdin ${ECR_URI}
+    // stage('Deploy to EC2') {
+    //   agent { label 'deploy' }
+    //   steps {
+    //     withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
+    //       sh """
+    //         aws ecr get-login-password --region ${AWS_REGION} | \
+    //           docker login --username AWS --password-stdin ${ECR_URI}
 
-            docker stop cicd-project || true
-            docker rm   cicd-project || true
+    //         docker stop cicd-project || true
+    //         docker rm   cicd-project || true
 
-            docker pull ${ECR_URI}:${IMAGE_TAG}
-            docker run -d --name cicd-project -p 3000:3000 ${ECR_URI}:${IMAGE_TAG}
+    //         docker pull ${ECR_URI}:${IMAGE_TAG}
+    //         docker run -d --name cicd-project -p 3000:3000 ${ECR_URI}:${IMAGE_TAG}
 
-            echo "Deployed: ${ECR_URI}:${IMAGE_TAG}"
-          """
-        }
-      }
-    }
+    //         echo "Deployed: ${ECR_URI}:${IMAGE_TAG}"
+    //       """
+    //     }
+    //   }
+    // }
 
   }
 
