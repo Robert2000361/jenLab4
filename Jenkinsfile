@@ -1,6 +1,6 @@
 pipeline {
 
-  agent { label 'EC2-Linux' }
+  agent { label 'node-agent' }
 
   environment {
     AWS_REGION = 'us-east-2'
